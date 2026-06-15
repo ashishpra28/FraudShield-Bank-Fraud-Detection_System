@@ -1,2 +1,5 @@
 .venv/ 
-data/AIML Dataset.csv
+data/fraud_data.csv
+__pycache__/
+.ipynb_checkpoints/
+notes2.txt
