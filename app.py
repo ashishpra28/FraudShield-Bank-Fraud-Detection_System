@@ -1,10 +1,11 @@
-# Import libraries 
-import streamlit as st 
-import pandas as pd 
-import joblib 
+# Import libraries
+import streamlit as st
+import requests
+import joblib
 
-# Import model 
-model = joblib.load("artifacts/model.pkl")
+API_URL = "http://127.0.0.1:8000/predict"
+
+model = joblib
 
 # Page configuration
 st.set_page_config(
@@ -23,8 +24,8 @@ st.markdown(
 st.divider()
 
 # Define user inputs    
-transaction_type = st.selectbox("Transaction Type",["PAYMENT","TRANSFER","CASH_OUT","CASH_IN","DEBIT"])
 hour = st.slider("Transaction Hour",min_value=0,max_value=23,value=12)
+transaction_type = st.selectbox("Transaction Type",["PAYMENT","TRANSFER","CASH_OUT","CASH_IN","DEBIT"])
 amount = st.number_input("Transaction Amount", min_value=0.0, value=1000.0)
 oldbalanceOrg = st.number_input("Old Sender Balance",min_value=0.0,value=0.0)
 newbalanceOrig = st.number_input("New Sender Balance",min_value=0.0,value=0.0)
@@ -39,36 +40,46 @@ if st.button("Predict Fraud"):
     balanceDiffDest = newbalanceDest - oldbalanceDest
 
     # Final input dataframe 
-    input_data = pd.DataFrame([{
+    input_data = {
+        "hour":hour,
         "type":transaction_type,
         "amount":amount,
-        "balanceDiffOrig": balanceDiffOrig,
-        "balanceDiffDest": balanceDiffDest,
-        "hour": hour
-    }])
-
-    # Prediction
-    prediction = model.predict(input_data)[0]
-    probability = model.predict_proba(input_data)[0][1]
+        "oldbalanceOrg": oldbalanceOrg,
+        "newbalanceOrig": newbalanceOrig,
+        "oldbalanceDest":oldbalanceDest,
+        "newbalanceDest":newbalanceDest
+    }
 
     st.divider() 
     st.subheader("Prediction Result")
 
-    if prediction == 1:
-        st.error(
-            f"⚠️ Fraudulent Transaction Detected\n\n"
-            f"Fraud Probability: {probability:.2%}"
-        )
-    else:
-        st.success(
-            f"✅ Legitimate Transaction\n\n"
-            f"Fraud Probability: {probability:.2%}"
-        )
+    try:
+        response = requests.post(API_URL,json=input_data)
+        if response.status_code==200:
+            result = response.json() 
+            if result['prediction'] == 1:
+                st.error(
+                    f"⚠️ Fraudulent Transaction Detected\n\n"
+                    f"Fraud Probability: {result['fraud_probability']:.2%}"
+                    )
+            else:
+                st.success(
+                    f"✅ Legitimate Transaction\n\n"
+                    f"Fraud Probability: {result['fraud_probability']:.2%}"
+                )
+            
+            # Risk level 
+            if result['fraud_probability'] >= 0.8:
+                st.error("🔴 High Risk")
+            elif result['fraud_probability'] >= 0.4:
+                st.warning("🟠 Medium Risk")
+            else:
+                st.success("🟢 Low Risk")
+        else: 
+            st.error(f"API Error: {response.status_code} - {response.text}")
+    except requests.exceptions.ConnectionError: 
+        st.error("Could not connect on the FastAPI server. Make sure it is connected on port 8000")
 
-    # Risk level 
-    if probability >= 0.8:
-        st.error("🔴 High Risk")
-    elif probability >= 0.4:
-        st.warning("🟠 Medium Risk")
-    else:
-        st.success("🟢 Low Risk")
+
+
+   
