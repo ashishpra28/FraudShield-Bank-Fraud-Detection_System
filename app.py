@@ -3,9 +3,8 @@ import streamlit as st
 import requests
 import joblib
 
+# API 
 API_URL = "http://127.0.0.1:8000/predict"
-
-model = joblib
 
 # Page configuration
 st.set_page_config(
@@ -59,7 +58,7 @@ if st.button("Predict Fraud"):
             result = response.json() 
             if result['prediction'] == 1:
                 st.error(
-                    f"⚠️ Fraudulent Transaction Detected\n\n"
+                    f"⚠️ Potential Fraudulent Transaction Detected\n\n"
                     f"Fraud Probability: {result['fraud_probability']:.2%}"
                     )
             else:
