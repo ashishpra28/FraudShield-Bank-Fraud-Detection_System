@@ -4,9 +4,9 @@ FraudShield is an AI-powered bank fraud detection system that identifies suspici
 
 Built using XGBoost, FastAPI, Streamlit, Docker, and Render.
 
-Check App: https://fraudshield-app-saq5.onrender.com/
-Check API: https://fraudshield-api-4op5.onrender.com/
-Check DockerHUB Repositoty: https://hub.docker.com/repositories/ashish7733,
+- Check App: https://fraudshield-app-saq5.onrender.com/
+- Check API: https://fraudshield-api-4op5.onrender.com/
+- Check DockerHUB Repositoty: https://hub.docker.com/repositories/ashish7733,
 docker pull ashish7733/fraudshield-ui:latest, docker pull ashish7733/fraudshield-api:latest
 
 ---
